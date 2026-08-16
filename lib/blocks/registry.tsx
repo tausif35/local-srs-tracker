@@ -11,6 +11,9 @@ import { StatGridBlockView } from "@/components/blocks/StatGridBlockView";
 import { TableBlockView } from "@/components/blocks/TableBlockView";
 import { ComparisonBlockView } from "@/components/blocks/ComparisonBlockView";
 import { ProgressBlockView } from "@/components/blocks/ProgressBlockView";
+import { TimelineBlockView } from "@/components/blocks/TimelineBlockView";
+import { DiagramBlockView } from "@/components/blocks/DiagramBlockView";
+import { CodeBlockView } from "@/components/blocks/CodeBlockView";
 
 type BlockComponent = ComponentType<{ block: ContentBlock }>;
 
@@ -26,7 +29,7 @@ export const blockRegistry: Record<ContentBlock["type"], BlockComponent> = {
   table: TableBlockView as BlockComponent,
   comparison: ComparisonBlockView as BlockComponent,
   progress: ProgressBlockView as BlockComponent,
-  timeline: MarkdownBlockView as BlockComponent, // placeholder, replaced in Task 20
-  diagram: MarkdownBlockView as BlockComponent, // placeholder, replaced in Task 20
-  code: MarkdownBlockView as BlockComponent, // placeholder, replaced in Task 20
+  timeline: TimelineBlockView as BlockComponent,
+  diagram: DiagramBlockView as BlockComponent,
+  code: CodeBlockView as BlockComponent,
 };
