@@ -8,6 +8,9 @@ import { QuoteBlockView } from "@/components/blocks/QuoteBlockView";
 import { LinkListBlockView } from "@/components/blocks/LinkListBlockView";
 import { ImageBlockView } from "@/components/blocks/ImageBlockView";
 import { StatGridBlockView } from "@/components/blocks/StatGridBlockView";
+import { TableBlockView } from "@/components/blocks/TableBlockView";
+import { ComparisonBlockView } from "@/components/blocks/ComparisonBlockView";
+import { ProgressBlockView } from "@/components/blocks/ProgressBlockView";
 
 type BlockComponent = ComponentType<{ block: ContentBlock }>;
 
@@ -20,9 +23,9 @@ export const blockRegistry: Record<ContentBlock["type"], BlockComponent> = {
   "link-list": LinkListBlockView as BlockComponent,
   image: ImageBlockView as BlockComponent,
   "stat-grid": StatGridBlockView as BlockComponent,
-  table: MarkdownBlockView as BlockComponent, // placeholder, replaced in Task 19
-  comparison: MarkdownBlockView as BlockComponent, // placeholder, replaced in Task 19
-  progress: MarkdownBlockView as BlockComponent, // placeholder, replaced in Task 19
+  table: TableBlockView as BlockComponent,
+  comparison: ComparisonBlockView as BlockComponent,
+  progress: ProgressBlockView as BlockComponent,
   timeline: MarkdownBlockView as BlockComponent, // placeholder, replaced in Task 20
   diagram: MarkdownBlockView as BlockComponent, // placeholder, replaced in Task 20
   code: MarkdownBlockView as BlockComponent, // placeholder, replaced in Task 20
