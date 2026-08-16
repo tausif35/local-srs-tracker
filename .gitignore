@@ -1,0 +1,8 @@
+node_modules/
+.next/
+data/registry.json
+next-env.d.ts
+*.local
+.env*.local
+.worktrees/
+.superpowers/
