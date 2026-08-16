@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import {
   DndContext,
   PointerSensor,
@@ -10,6 +11,7 @@ import {
 import { arrayMove } from "@dnd-kit/sortable";
 import type { Task, TaskColumn } from "@/lib/types";
 import { BoardColumn } from "./BoardColumn";
+import { NewTaskDialog } from "./NewTaskDialog";
 
 const COLUMNS: { id: TaskColumn; label: string }[] = [
   { id: "planning", label: "Planning" },
@@ -27,6 +29,13 @@ export function TaskBoard({
   onChange: (next: Task[]) => void;
 }) {
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 4 } }));
+
+  const [dialogOpen, setDialogOpen] = useState(false);
+
+  function handleCreate(task: Task) {
+    onChange([...tasks, task]);
+    setDialogOpen(false);
+  }
 
   function tasksForColumn(column: TaskColumn): Task[] {
     return tasks.filter((t) => t.column === column).sort((a, b) => a.order - b.order);
@@ -67,7 +76,15 @@ export function TaskBoard({
 
   return (
     <div>
-      <h1 className="mb-4 text-2xl font-semibold">Task Board</h1>
+      <div className="mb-4 flex items-center justify-between">
+        <h1 className="text-2xl font-semibold">Task Board</h1>
+        <button
+          onClick={() => setDialogOpen(true)}
+          className="rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium"
+        >
+          New task
+        </button>
+      </div>
       <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
         <div className="grid grid-cols-1 gap-4 md:grid-cols-5">
           {COLUMNS.map((column) => (
@@ -75,6 +92,7 @@ export function TaskBoard({
           ))}
         </div>
       </DndContext>
+      {dialogOpen && <NewTaskDialog onCreate={handleCreate} onClose={() => setDialogOpen(false)} />}
     </div>
   );
 }
