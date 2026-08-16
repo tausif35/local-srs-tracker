@@ -198,6 +198,8 @@ data/registry.json
 next-env.d.ts
 *.local
 .env*.local
+.worktrees/
+.superpowers/
 ```
 
 - [ ] **Step 8: Write `app/globals.css`**
