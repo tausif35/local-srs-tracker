@@ -1,9 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
-import { readRegistry, addProject } from "@/lib/server/registry";
+import { readRegistry, addProject, projectDirectoryExists } from "@/lib/server/registry";
 
 export async function GET() {
   const projects = await readRegistry();
-  return NextResponse.json(projects);
+  return NextResponse.json(
+    await Promise.all(
+      projects.map(async (project) => ({
+        ...project,
+        available: await projectDirectoryExists(project),
+      }))
+    )
+  );
 }
 
 export async function POST(request: NextRequest) {

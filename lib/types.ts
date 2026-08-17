@@ -113,6 +113,10 @@ export interface RegisteredProject {
   id: string;
   name: string;
   path: string;
+  pinned?: boolean;
+  lastOpenedAt?: string;
+  available?: boolean;
+  healthSummary?: TrackerHealthReport["summary"];
 }
 
 export interface BlockBase {

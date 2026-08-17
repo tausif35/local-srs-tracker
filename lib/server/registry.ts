@@ -36,6 +36,43 @@ export async function findProject(id: string): Promise<RegisteredProject | null>
   return projects.find((p) => p.id === id) ?? null;
 }
 
+export async function projectDirectoryExists(project: RegisteredProject): Promise<boolean> {
+  const stat = await fs.stat(project.path).catch(() => null);
+  return Boolean(stat?.isDirectory());
+}
+
+export async function updateProject(
+  id: string,
+  updates: Partial<Pick<RegisteredProject, "name" | "pinned" | "lastOpenedAt">>
+): Promise<RegisteredProject> {
+  const projects = await readRegistry();
+  const index = projects.findIndex((project) => project.id === id);
+  if (index === -1) throw new Error(`Project not found: ${id}`);
+
+  const current = projects[index];
+  const name = updates.name === undefined ? current.name : updates.name.trim();
+  if (name === "") throw new Error("Project name cannot be empty");
+
+  const updated: RegisteredProject = {
+    ...current,
+    name,
+    pinned: updates.pinned ?? current.pinned,
+    lastOpenedAt: updates.lastOpenedAt ?? current.lastOpenedAt,
+  };
+  projects[index] = updated;
+  await writeRegistry(projects);
+  return updated;
+}
+
+/** Removes only the machine-local registration. Project files are never touched. */
+export async function removeProject(id: string): Promise<RegisteredProject> {
+  const projects = await readRegistry();
+  const project = projects.find((candidate) => candidate.id === id);
+  if (!project) throw new Error(`Project not found: ${id}`);
+  await writeRegistry(projects.filter((candidate) => candidate.id !== id));
+  return project;
+}
+
 export async function addProject(dirPath: string): Promise<RegisteredProject> {
   const resolvedPath = path.resolve(dirPath);
   const stat = await fs.stat(resolvedPath).catch(() => null);
