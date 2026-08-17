@@ -8,3 +8,6 @@ next-env.d.ts
 .superpowers/
 *.tsbuildinfo
 dev.log
+dist/
+.temp/
+.remember/
