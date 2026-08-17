@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
 import type { ProjectMeta } from "@/lib/types";
 import { ProjectEventsProvider } from "@/hooks/useProjectEvents";
+import { GlobalSearch } from "@/components/GlobalSearch";
 
 function labelFor(pageId: string, label?: string): string {
   if (label) return label;
@@ -25,11 +26,12 @@ export function ProjectShell({
   return (
     <ProjectEventsProvider projectId={projectId}>
       <div className="flex min-h-screen">
-        <nav className="w-56 shrink-0 border-r border-slate-800 p-4">
-          <Link href="/" className="mb-6 block text-sm text-slate-400 hover:text-slate-200">
+        <nav className="w-56 shrink-0 border-r border-slate-200 bg-slate-50/60 p-4">
+          <Link href="/" className="mb-6 block text-sm text-slate-500 hover:text-slate-900">
             &larr; All projects
           </Link>
-          <div className="mb-4 text-lg font-semibold">{meta.name}</div>
+          <div className="mb-4 text-lg font-semibold tracking-tight text-slate-900">{meta.name}</div>
+          <GlobalSearch projectId={projectId} meta={meta} />
           <ul className="space-y-1">
             {meta.pages.map((page) => {
               const href = `/project/${projectId}/${page.id}`;
@@ -38,8 +40,8 @@ export function ProjectShell({
                 <li key={page.id}>
                   <Link
                     href={href}
-                    className={`block rounded-md px-3 py-2 text-sm ${
-                      active ? "bg-indigo-600 text-white" : "text-slate-300 hover:bg-slate-800"
+                    className={`block rounded-md px-3 py-2 text-sm font-medium ${
+                      active ? "bg-indigo-600 text-white" : "text-slate-600 hover:bg-slate-100"
                     }`}
                   >
                     {labelFor(page.id, page.label)}

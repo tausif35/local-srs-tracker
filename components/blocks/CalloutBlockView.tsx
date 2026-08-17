@@ -1,10 +1,10 @@
 import type { CalloutBlock } from "@/lib/types";
 
 const TONE_CLASSES: Record<CalloutBlock["content"]["tone"], string> = {
-  info: "border-sky-700 bg-sky-950 text-sky-100",
-  warning: "border-amber-700 bg-amber-950 text-amber-100",
-  danger: "border-red-700 bg-red-950 text-red-100",
-  success: "border-emerald-700 bg-emerald-950 text-emerald-100",
+  info: "border-sky-200 bg-sky-50 text-sky-900",
+  warning: "border-amber-200 bg-amber-50 text-amber-900",
+  danger: "border-rose-200 bg-rose-50 text-rose-900",
+  success: "border-emerald-200 bg-emerald-50 text-emerald-900",
 };
 
 export function CalloutBlockView({ block }: { block: CalloutBlock }) {

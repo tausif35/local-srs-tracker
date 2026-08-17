@@ -1,10 +1,10 @@
 import type { ListBlock } from "@/lib/types";
 
 const STATUS_COLOR: Record<string, string> = {
-  done: "text-emerald-400",
-  warning: "text-amber-400",
-  error: "text-red-400",
-  none: "text-slate-300",
+  done: "text-emerald-700",
+  warning: "text-amber-700",
+  error: "text-rose-700",
+  none: "text-slate-700",
 };
 
 export function ListBlockView({ block }: { block: ListBlock }) {

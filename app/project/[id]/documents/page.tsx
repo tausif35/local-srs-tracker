@@ -46,7 +46,7 @@ export default function DocumentsPage() {
               <button
                 onClick={() => setSelected(doc.path)}
                 className={`block w-full rounded-md px-3 py-2 text-left text-sm ${
-                  selected === doc.path ? "bg-indigo-600 text-white" : "text-slate-300 hover:bg-slate-800"
+                  selected === doc.path ? "bg-indigo-600 text-white" : "text-slate-600 hover:bg-slate-100"
                 }`}
               >
                 {doc.label}
@@ -55,7 +55,7 @@ export default function DocumentsPage() {
           ))}
         </ul>
       </aside>
-      <article className="prose prose-invert max-w-none flex-1">
+      <article className="prose prose-slate max-w-none flex-1">
         <ReactMarkdown remarkPlugins={[remarkGfm]}>{content}</ReactMarkdown>
       </article>
     </div>

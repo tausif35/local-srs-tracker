@@ -22,7 +22,7 @@ export default function SectionsPage() {
         setNotFound(true);
         return;
       }
-      setSource(page.source as DataFileName);
+      setSource(page.source);
     }
     loadMeta();
     return () => {
@@ -30,8 +30,8 @@ export default function SectionsPage() {
     };
   }, [id, pageId]);
 
-  if (notFound) return <p className="text-slate-400">Page not found.</p>;
-  if (!source) return <p className="text-slate-400">Loading...</p>;
+  if (notFound) return <p className="text-slate-500">Page not found.</p>;
+  if (!source) return <p className="text-slate-500">Loading...</p>;
 
   return <SectionsBody projectId={id} source={source} />;
 }

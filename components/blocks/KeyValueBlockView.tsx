@@ -6,8 +6,8 @@ export function KeyValueBlockView({ block }: { block: KeyValueBlock }) {
     <dl className={dense ? "grid grid-cols-2 gap-x-6 gap-y-1 text-sm" : "space-y-3"}>
       {items.map((item, index) => (
         <div key={index} className={dense ? "contents" : ""}>
-          <dt className="text-slate-400">{item.label}</dt>
-          <dd className={dense ? "" : "mt-0.5"}>{item.value}</dd>
+          <dt className="text-slate-500">{item.label}</dt>
+          <dd className={dense ? "text-slate-800" : "mt-0.5 text-slate-800"}>{item.value}</dd>
         </div>
       ))}
     </dl>
