@@ -18,7 +18,7 @@ export default async function ProjectLayout({
   const meta = await readDataFile<ProjectMeta>(project.path, "meta.json");
 
   return (
-    <ProjectShell projectId={params.id} meta={meta}>
+    <ProjectShell projectId={params.id} projectPath={project.path} meta={meta}>
       {children}
     </ProjectShell>
   );

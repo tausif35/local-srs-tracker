@@ -53,6 +53,14 @@ export default function OverviewPage() {
         {meta?.description && <p className="mt-1 max-w-2xl text-sm text-slate-500">{meta.description}</p>}
       </div>
 
+      {requirements.length === 0 && tasks.length === 0 && (
+        <section className="mb-8 rounded-xl border border-dashed border-indigo-200 bg-indigo-50/50 p-6">
+          <h2 className="font-medium text-slate-900">This tracker is ready for project data</h2>
+          <p className="mt-1 text-sm text-slate-600">Populate requirements from your planning document with the bundled agent skill, or add a first task manually.</p>
+          <div className="mt-4 flex flex-wrap gap-3"><Link href={`/project/${id}/board`} className="rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white">Create a task</Link><Link href={`/project/${id}/health`} className="rounded-md border border-indigo-200 bg-white px-4 py-2 text-sm font-medium text-indigo-700">Check Tracker Health</Link></div>
+        </section>
+      )}
+
       <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
         <StatCard label="Requirements" value={stats.totalRequirements} />
         <StatCard label="Critical" value={stats.critical} accent="rose" />

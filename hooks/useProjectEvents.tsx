@@ -1,11 +1,12 @@
 "use client";
 
-import { createContext, useContext, useEffect, useRef, type ReactNode } from "react";
+import { createContext, useContext, useEffect, useRef, useState, type ReactNode } from "react";
 
 type Listener = (file: string) => void;
 
 interface EventsContextValue {
   subscribe: (file: string, listener: Listener) => () => void;
+  status: "connecting" | "connected" | "disconnected";
 }
 
 const EventsContext = createContext<EventsContextValue | null>(null);
@@ -18,9 +19,13 @@ export function ProjectEventsProvider({
   children: ReactNode;
 }) {
   const listenersRef = useRef<Map<string, Set<Listener>>>(new Map());
+  const [status, setStatus] = useState<EventsContextValue["status"]>("connecting");
 
   useEffect(() => {
     const source = new EventSource(`/api/projects/${projectId}/events`);
+    setStatus("connecting");
+    source.onopen = () => setStatus("connected");
+    source.onerror = () => setStatus("disconnected");
     source.onmessage = (event) => {
       const file = event.data;
       const listeners = listenersRef.current.get(file);
@@ -41,7 +46,11 @@ export function ProjectEventsProvider({
     };
   };
 
-  return <EventsContext.Provider value={{ subscribe }}>{children}</EventsContext.Provider>;
+  return <EventsContext.Provider value={{ subscribe, status }}>{children}</EventsContext.Provider>;
+}
+
+export function useProjectConnectionStatus(): EventsContextValue["status"] {
+  return useContext(EventsContext)?.status ?? "disconnected";
 }
 
 export function useProjectFileEvents(file: string, onChange: () => void): void {
