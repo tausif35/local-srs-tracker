@@ -17,6 +17,7 @@ The browser UI and coding agents work from the same `.tracker/` directory, so ch
 - Detect file changes through Server-Sent Events and refresh the UI automatically
 - Check tracker health for schema errors, broken references, dependency issues, and source-document drift
 - Build a self-contained Windows distribution with an embedded Node.js runtime
+- Use repository-provided coding-agent skills for ingestion, focused task work, and session handoff
 
 ## How it works
 
@@ -38,6 +39,16 @@ your-project/
 `meta.json` defines the project's navigation and may declare additional JSON-backed content pages. SRS Tracker validates writes before saving them and watches the files for changes made by editors, scripts, or coding agents.
 
 See [docs/tracker-json-guide.md](docs/tracker-json-guide.md) for the complete file formats, block schemas, naming conventions, and examples.
+
+## Using with coding agents
+
+The repository includes three optional, portable agent skills:
+
+- [`populating-tracker-data`](skills/populating-tracker-data/SKILL.md) — create or explicitly resynchronize `.tracker` data from an SRS or planning document.
+- [`working-from-tracker`](skills/working-from-tracker/SKILL.md) — plan, implement, test, debug, or resume one tracked task with focused context.
+- [`tracking-session-state`](skills/tracking-session-state/SKILL.md) — keep current state and the append-only decision log synchronized as work changes.
+
+Skills must be copied into a directory recognized by your coding agent before they can trigger automatically. See the [coding-agent workflow guide](docs/agent-workflow.md) for installation commands, recommended project instructions, example prompts, and the daily task lifecycle.
 
 ## Requirements
 
@@ -150,6 +161,7 @@ lib/          Types, validation, workflow rules, and server utilities
 docs/         Tracker schema guide and design documents
 launcher/     Windows launcher source
 scripts/      Packaging and launch scripts
+skills/       Optional coding-agent workflow skills
 ```
 
 When behavior changes, update or add focused Vitest coverage and keep [docs/tracker-json-guide.md](docs/tracker-json-guide.md) synchronized with any tracker schema changes.
