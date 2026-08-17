@@ -3,7 +3,7 @@ import { type DataFileName } from "@/lib/types";
 
 export const pageManifestEntrySchema = z.object({
   id: z.string().min(1),
-  type: z.enum(["overview", "requirements-explorer", "task-board", "documents", "sections"]),
+  type: z.enum(["overview", "requirements-explorer", "task-board", "documents", "health", "sections"]),
   source: z.string().optional(),
   label: z.string().optional(),
 });
@@ -25,23 +25,40 @@ export const requirementSchema = z.object({
 });
 export const requirementsFileSchema = z.array(requirementSchema);
 
+const nonBlankString = z.string().trim().min(1);
+
 export const taskSchema = z.object({
   id: z.string().min(1),
   title: z.string().min(1),
   description: z.string().optional(),
   column: z.enum(["planning", "implementation", "testing", "bugs", "done"]),
   requirementIds: z.array(z.string()).optional(),
+  blockedBy: z.array(z.string()).optional(),
+  scope: z.string().optional(),
+  exclusions: z.array(nonBlankString).optional(),
+  architectureRefs: z.array(nonBlankString).optional(),
+  acceptanceCriteria: z.array(nonBlankString).optional(),
+  verification: z
+    .object({
+      commands: z.array(nonBlankString).min(1),
+      status: z.enum(["pending", "passed", "failed"]),
+      evidence: z.string().optional(),
+    })
+    .optional(),
+  unresolvedDecisions: z.array(nonBlankString).optional(),
   priority: z.enum(["low", "medium", "high"]).optional(),
   notes: z.string().optional(),
   order: z.number(),
   createdAt: z.string(),
   updatedAt: z.string(),
-});
+}).passthrough();
 export const tasksFileSchema = z.array(taskSchema);
 
 export const documentEntrySchema = z.object({
   label: z.string().min(1),
   path: z.string().min(1),
+  syncedAt: z.string().optional(),
+  sourceSha256: z.string().regex(/^[a-f0-9]{64}$/).optional(),
 });
 export const documentsFileSchema = z.array(documentEntrySchema);
 
@@ -101,6 +118,8 @@ export const contentBlockSchema = z.discriminatedUnion("type", [
           description: z.string().optional(),
           status: z.enum(["done", "active", "planned", "blocked"]).optional(),
           date: z.string().optional(),
+          items: z.array(z.string()).optional(),
+          exit: z.string().optional(),
         })
       ),
     }),
@@ -166,13 +185,9 @@ export function schemaForFile(file: DataFileName) {
       return tasksFileSchema;
     case "documents.json":
       return documentsFileSchema;
-    case "architecture.json":
-    case "strategy.json":
-    case "roadmap.json":
+    default:
+      // Any other declared "sections" source (architecture.json, roadmap.json, or a
+      // project-specific one like modules.json) uses the generic content-blocks schema.
       return sectionsFileSchema;
-    default: {
-      const exhaustive: never = file;
-      throw new Error(`No schema for file: ${exhaustive}`);
-    }
   }
 }

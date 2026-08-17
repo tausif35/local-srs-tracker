@@ -15,6 +15,89 @@ describe("requirementsFileSchema", () => {
   });
 });
 
+describe("tasksFileSchema", () => {
+  const baseTask = {
+    id: "t-1",
+    title: "Implement workflow",
+    column: "planning",
+    order: 0,
+    createdAt: "2026-08-16T00:00:00.000Z",
+    updatedAt: "2026-08-16T00:00:00.000Z",
+  };
+
+  it("preserves the optional workflow fields and verification evidence", () => {
+    const result = tasksFileSchema.safeParse([
+      {
+        ...baseTask,
+        scope: "Task lifecycle rules",
+        exclusions: ["Board UI"],
+        architectureRefs: ["ARC-4"],
+        acceptanceCriteria: ["Reject invalid transitions"],
+        verification: {
+          commands: ["npm test -- lib/taskWorkflow.test.ts"],
+          status: "passed",
+          evidence: "All focused tests pass.",
+        },
+        unresolvedDecisions: ["OI-7"],
+      },
+    ]);
+
+    expect(result.success).toBe(true);
+    if (!result.success) return;
+    expect(result.data[0]).toMatchObject({
+      scope: "Task lifecycle rules",
+      exclusions: ["Board UI"],
+      architectureRefs: ["ARC-4"],
+      acceptanceCriteria: ["Reject invalid transitions"],
+      verification: {
+        commands: ["npm test -- lib/taskWorkflow.test.ts"],
+        status: "passed",
+        evidence: "All focused tests pass.",
+      },
+      unresolvedDecisions: ["OI-7"],
+    });
+  });
+
+  it("rejects verification without commands and a recognized status", () => {
+    expect(
+      tasksFileSchema.safeParse([
+        { ...baseTask, verification: { commands: [], status: "unknown" } },
+      ]).success
+    ).toBe(false);
+  });
+
+  it("preserves legacy task metadata that the workflow does not interpret", () => {
+    const result = tasksFileSchema.safeParse([
+      {
+        ...baseTask,
+        legacyEstimate: 3,
+        migrationMetadata: { importedBy: "tracker-v1", labels: ["legacy"] },
+      },
+    ]);
+
+    expect(result.success).toBe(true);
+    if (!result.success) return;
+    expect(result.data[0]).toMatchObject({
+      legacyEstimate: 3,
+      migrationMetadata: { importedBy: "tracker-v1", labels: ["legacy"] },
+    });
+  });
+
+  it("rejects whitespace-only workflow entries", () => {
+    const invalidEntries = [
+      { exclusions: [" \t "] },
+      { architectureRefs: [" \t "] },
+      { acceptanceCriteria: [" \t "] },
+      { verification: { commands: [" \t "], status: "pending" } },
+      { unresolvedDecisions: [" \t "] },
+    ];
+
+    for (const entry of invalidEntries) {
+      expect(tasksFileSchema.safeParse([{ ...baseTask, ...entry }]).success).toBe(false);
+    }
+  });
+});
+
 describe("contentBlockSchema", () => {
   it("accepts a valid table block", () => {
     const result = contentBlockSchema.safeParse({

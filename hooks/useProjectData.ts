@@ -7,13 +7,19 @@ import type { DataFileName } from "@/lib/types";
 export function useProjectData<T>(projectId: string, file: DataFileName, fallback: T) {
   const [data, setData] = useState<T>(fallback);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   const refetch = useCallback(async () => {
-    const res = await fetch(`/api/projects/${projectId}/data/${file}`);
-    if (res.ok) {
+    try {
+      const res = await fetch(`/api/projects/${projectId}/data/${file}`);
+      if (!res.ok) throw new Error(`Unable to load ${file} (${res.status})`);
       setData(await res.json());
+      setError(null);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : `Unable to load ${file}`);
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   }, [projectId, file]);
 
   useEffect(() => {
@@ -24,15 +30,33 @@ export function useProjectData<T>(projectId: string, file: DataFileName, fallbac
 
   const save = useCallback(
     async (next: T) => {
+      const previous = data;
       setData(next);
-      await fetch(`/api/projects/${projectId}/data/${file}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(next),
-      });
+      try {
+        const res = await fetch(`/api/projects/${projectId}/data/${file}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(next),
+        });
+        if (!res.ok) {
+          const body = await res.json().catch(() => null);
+          const message = Array.isArray(body?.issues)
+            ? body.issues.join(" ")
+            : typeof body?.error === "string"
+              ? body.error
+              : `Unable to save ${file} (${res.status})`;
+          throw new Error(message);
+        }
+        setError(null);
+      } catch (err) {
+        setData(previous);
+        const message = err instanceof Error ? err.message : `Unable to save ${file}`;
+        setError(message);
+        throw err;
+      }
     },
-    [projectId, file]
+    [data, projectId, file]
   );
 
-  return { data, setData, save, loading };
+  return { data, setData, save, loading, error };
 }

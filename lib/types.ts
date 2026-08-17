@@ -1,3 +1,10 @@
+/**
+ * The core data files every project gets scaffolded with. Projects may also declare
+ * additional custom "sections" pages (e.g. "modules.json") in their meta.json manifest —
+ * those aren't listed here since the set is project-specific, but they're just as valid.
+ * See isSafeJsonFilename + the data file route, which validates against a project's own
+ * meta.json.pages[].source list rather than a fixed global list.
+ */
 export const ALLOWED_DATA_FILES = [
   "meta.json",
   "requirements.json",
@@ -8,10 +15,12 @@ export const ALLOWED_DATA_FILES = [
   "documents.json",
 ] as const;
 
-export type DataFileName = (typeof ALLOWED_DATA_FILES)[number];
+/** Any project-relative JSON data filename, e.g. "requirements.json" or a custom "modules.json". */
+export type DataFileName = string;
 
-export function isDataFileName(value: string): value is DataFileName {
-  return (ALLOWED_DATA_FILES as readonly string[]).includes(value);
+/** Basic filename safety: a bare ".json" filename with no path separators or traversal. */
+export function isSafeJsonFilename(value: string): boolean {
+  return /^[A-Za-z0-9_-]+\.json$/.test(value);
 }
 
 export type PageType =
@@ -19,6 +28,7 @@ export type PageType =
   | "requirements-explorer"
   | "task-board"
   | "documents"
+  | "health"
   | "sections";
 
 export interface PageManifestEntry {
@@ -46,12 +56,26 @@ export interface Requirement {
 
 export type TaskColumn = "planning" | "implementation" | "testing" | "bugs" | "done";
 
+export interface TaskVerification {
+  commands: string[];
+  status: "pending" | "passed" | "failed";
+  evidence?: string;
+}
+
 export interface Task {
   id: string;
   title: string;
   description?: string;
   column: TaskColumn;
   requirementIds?: string[];
+  /** IDs of other tasks that must be done before this one can start. */
+  blockedBy?: string[];
+  scope?: string;
+  exclusions?: string[];
+  architectureRefs?: string[];
+  acceptanceCriteria?: string[];
+  verification?: TaskVerification;
+  unresolvedDecisions?: string[];
   priority?: "low" | "medium" | "high";
   notes?: string;
   order: number;
@@ -62,6 +86,27 @@ export interface Task {
 export interface DocumentEntry {
   label: string;
   path: string;
+  /** When this registered source was last synchronized into tracker data. */
+  syncedAt?: string;
+  /** Lowercase SHA-256 fingerprint of the synchronized source document. */
+  sourceSha256?: string;
+}
+
+export type TrackerHealthSeverity = "error" | "warning";
+
+export interface TrackerHealthIssue {
+  severity: TrackerHealthSeverity;
+  code: string;
+  message: string;
+  /** A task, requirement, page, block, or project-relative path to correct. */
+  identifier?: string;
+  /** The tracker data file that contains the issue when applicable. */
+  file?: string;
+}
+
+export interface TrackerHealthReport {
+  summary: { errors: number; warnings: number };
+  issues: TrackerHealthIssue[];
 }
 
 export interface RegisteredProject {
@@ -117,6 +162,10 @@ export interface TimelineEntry {
   description?: string;
   status?: "done" | "active" | "planned" | "blocked";
   date?: string;
+  /** Optional bullet breakdown of what this entry covers. Renders as a list under the description. */
+  items?: string[];
+  /** Optional exit criterion / definition of done, highlighted separately from the description. */
+  exit?: string;
 }
 
 export interface TimelineBlock extends BlockBase {
