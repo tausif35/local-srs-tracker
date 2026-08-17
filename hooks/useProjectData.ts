@@ -8,6 +8,7 @@ export function useProjectData<T>(projectId: string, file: DataFileName, fallbac
   const [data, setData] = useState<T>(fallback);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [saving, setSaving] = useState(false);
 
   const refetch = useCallback(async () => {
     try {
@@ -32,6 +33,7 @@ export function useProjectData<T>(projectId: string, file: DataFileName, fallbac
     async (next: T) => {
       const previous = data;
       setData(next);
+      setSaving(true);
       try {
         const res = await fetch(`/api/projects/${projectId}/data/${file}`, {
           method: "PUT",
@@ -53,10 +55,12 @@ export function useProjectData<T>(projectId: string, file: DataFileName, fallbac
         const message = err instanceof Error ? err.message : `Unable to save ${file}`;
         setError(message);
         throw err;
+      } finally {
+        setSaving(false);
       }
     },
     [data, projectId, file]
   );
 
-  return { data, setData, save, loading, error };
+  return { data, setData, save, loading, saving, error, refetch };
 }

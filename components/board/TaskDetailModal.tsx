@@ -2,7 +2,10 @@
 
 import Link from "next/link";
 import { useState, type FormEvent } from "react";
-import type { Task, TaskColumn } from "@/lib/types";
+import type { Requirement, Task, TaskColumn } from "@/lib/types";
+import { Dialog } from "@/components/ui/Dialog";
+import { MultiSelectField } from "@/components/ui/MultiSelectField";
+import { BlockedIcon, CheckIcon } from "@/components/ui/Icons";
 
 const COLUMN_OPTIONS: { id: TaskColumn; label: string }[] = [
   { id: "planning", label: "Planning" },
@@ -17,6 +20,7 @@ const PRIORITY_OPTIONS: NonNullable<Task["priority"]>[] = ["low", "medium", "hig
 export function TaskDetailModal({
   task,
   allTasks,
+  requirements,
   projectId,
   onSave,
   onDelete,
@@ -25,6 +29,7 @@ export function TaskDetailModal({
 }: {
   task: Task;
   allTasks: Task[];
+  requirements: Requirement[];
   projectId: string;
   onSave: (task: Task) => void;
   onDelete: (taskId: string) => void;
@@ -44,28 +49,18 @@ export function TaskDetailModal({
   const [notes, setNotes] = useState(task.notes ?? "");
   const [priority, setPriority] = useState<Task["priority"]>(task.priority);
   const [column, setColumn] = useState<TaskColumn>(task.column);
-  const [requirementIdsText, setRequirementIdsText] = useState((task.requirementIds ?? []).join(", "));
-  const [blockedByText, setBlockedByText] = useState((task.blockedBy ?? []).join(", "));
+  const [requirementIds, setRequirementIds] = useState(task.requirementIds ?? []);
+  const [blockedBy, setBlockedBy] = useState(task.blockedBy ?? []);
   const [confirmingDelete, setConfirmingDelete] = useState(false);
 
-  const blockers = (task.blockedBy ?? [])
+  const blockers = blockedBy
     .map((id) => allTasks.find((t) => t.id === id))
     .filter((t): t is Task => !!t);
 
-  function handleSubmit(event: FormEvent) {
-    event.preventDefault();
-    if (title.trim() === "") return;
-    const requirementIds = requirementIdsText
-      .split(",")
-      .map((s) => s.trim())
-      .filter(Boolean);
-    const blockedBy = blockedByText
-      .split(",")
-      .map((s) => s.trim())
-      .filter(Boolean);
+  function buildTask(updatedAt = task.updatedAt): Task {
     const lines = (value: string) => value.split("\n").map((item) => item.trim()).filter(Boolean);
     const commands = lines(verificationCommands);
-    onSave({
+    return {
       ...task,
       title: title.trim(),
       description: description.trim() || undefined,
@@ -82,12 +77,23 @@ export function TaskDetailModal({
       column,
       requirementIds: requirementIds.length > 0 ? requirementIds : undefined,
       blockedBy: blockedBy.length > 0 ? blockedBy : undefined,
-      updatedAt: new Date().toISOString(),
-    });
+      updatedAt,
+    };
+  }
+
+  function handleSubmit(event: FormEvent) {
+    event.preventDefault();
+    if (title.trim() === "") return;
+    onSave(buildTask(new Date().toISOString()));
+  }
+
+  function requestClose() {
+    const dirty = JSON.stringify(buildTask()) !== JSON.stringify(task);
+    if (!dirty || window.confirm("Discard your unsaved task changes?")) onClose();
   }
 
   return (
-    <div className="fixed inset-0 z-20 flex items-center justify-center bg-black/60 p-4">
+    <Dialog open title={`Task details: ${task.title}`} onClose={requestClose} panelClassName="max-w-lg">
       <form
         onSubmit={handleSubmit}
         className="flex max-h-[85vh] w-full max-w-lg flex-col rounded-lg border border-slate-200 bg-white p-6 shadow-lg"
@@ -189,19 +195,11 @@ export function TaskDetailModal({
             </label>
           </div>
 
-          <label className="block text-xs font-medium text-slate-500">
-            Linked requirement IDs (comma-separated)
-            <input
-              value={requirementIdsText}
-              onChange={(event) => setRequirementIdsText(event.target.value)}
-              placeholder="e.g. FR-MT-1, AR-7"
-              className="mt-1 w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900"
-            />
-          </label>
+          <MultiSelectField label="Linked requirements" options={requirements.map((requirement) => ({ value: requirement.id, label: requirement.text, detail: requirement.section }))} selected={requirementIds} onChange={setRequirementIds} placeholder="Search requirement IDs or text..." />
 
-          {(task.requirementIds ?? []).length > 0 && (
+          {requirementIds.length > 0 && (
             <div className="flex flex-wrap gap-1.5">
-              {task.requirementIds!.map((reqId) => (
+              {requirementIds.map((reqId) => (
                 <Link
                   key={reqId}
                   href={`/project/${projectId}/requirements?q=${encodeURIComponent(reqId)}`}
@@ -213,15 +211,7 @@ export function TaskDetailModal({
             </div>
           )}
 
-          <label className="block text-xs font-medium text-slate-500">
-            Blocked by (task IDs, comma-separated)
-            <input
-              value={blockedByText}
-              onChange={(event) => setBlockedByText(event.target.value)}
-              placeholder="e.g. t_r1_003, t_r1_004"
-              className="mt-1 w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900"
-            />
-          </label>
+          <MultiSelectField label="Blocked by" options={allTasks.filter((candidate) => candidate.id !== task.id).map((candidate) => ({ value: candidate.id, label: candidate.title, detail: candidate.column }))} selected={blockedBy} onChange={setBlockedBy} placeholder="Search task IDs or titles..." />
 
           {blockers.length > 0 && (
             <div className="flex flex-wrap gap-1.5">
@@ -237,7 +227,7 @@ export function TaskDetailModal({
                       : "border-amber-200 bg-amber-50 text-amber-700"
                   }`}
                 >
-                  {blocker.column === "done" ? "✓ " : "⛔ "}
+                  {blocker.column === "done" ? <CheckIcon className="mr-1 inline h-3 w-3" /> : <BlockedIcon className="mr-1 inline h-3 w-3" />}
                   {blocker.title}
                 </button>
               ))}
@@ -279,7 +269,7 @@ export function TaskDetailModal({
             </button>
           )}
           <div className="flex gap-2">
-            <button type="button" onClick={onClose} className="px-4 py-2 text-sm text-slate-500">
+            <button type="button" onClick={requestClose} className="px-4 py-2 text-sm text-slate-500">
               Close
             </button>
             <button
@@ -291,7 +281,7 @@ export function TaskDetailModal({
           </div>
         </div>
       </form>
-    </div>
+    </Dialog>
   );
 }
 

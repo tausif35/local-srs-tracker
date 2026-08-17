@@ -3,6 +3,7 @@
 import { useState, type FormEvent } from "react";
 import { nanoid } from "nanoid";
 import type { Task } from "@/lib/types";
+import { Dialog } from "@/components/ui/Dialog";
 
 export function NewTaskDialog({
   onCreate,
@@ -30,26 +31,26 @@ export function NewTaskDialog({
   }
 
   return (
-    <div className="fixed inset-0 flex items-center justify-center bg-black/60">
+    <Dialog open title="New task" onClose={onClose} panelClassName="max-w-md">
       <form
         onSubmit={handleSubmit}
         className="w-full max-w-md rounded-lg border border-slate-200 bg-white p-6 shadow-lg"
       >
         <h2 className="mb-4 text-lg font-medium text-slate-900">New task</h2>
-        <input
+        <label className="mb-3 block text-sm font-medium text-slate-700">Title<input
           value={title}
           onChange={(event) => setTitle(event.target.value)}
           placeholder="Title"
-          className="mb-3 w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm"
+          className="mt-1 w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm"
           autoFocus
-        />
-        <textarea
+        /></label>
+        <label className="mb-4 block text-sm font-medium text-slate-700">Description<textarea
           value={description}
           onChange={(event) => setDescription(event.target.value)}
           placeholder="Description (optional)"
-          className="mb-4 w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm"
+          className="mt-1 w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm"
           rows={3}
-        />
+        /></label>
         <div className="flex justify-end gap-2">
           <button type="button" onClick={onClose} className="px-4 py-2 text-sm text-slate-500">
             Cancel
@@ -59,6 +60,6 @@ export function NewTaskDialog({
           </button>
         </div>
       </form>
-    </div>
+    </Dialog>
   );
 }
