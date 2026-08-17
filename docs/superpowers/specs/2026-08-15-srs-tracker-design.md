@@ -14,7 +14,7 @@ progress tracker. It has two consumers of the same data:
   website.
 
 Changes from either side are reflected in the other, without a database in
-between. Nexus (`Z:\Projects\Progress-Tracker`) is the first project this
+between. An example project (`C:\Projects\ExampleProject`) can be the first project this
 tool will track, but the tool itself is generic — it must work for any
 future project without code changes, only new data.
 
@@ -58,7 +58,7 @@ files, not from per-project code.
 
 ## 4. Project registry and layout
 
-The tracker tool lives in its own repo (`Z:\Tools\srs-tracker`), separate
+The tracker tool lives in its own repository, separate
 from any project it tracks. It maintains its own small local registry —
 `{ id, name, path }[]` — stored in the tool's own app-data directory, not
 inside any tracked project. This backs the project picker in the UI:
@@ -215,8 +215,7 @@ own data properly once the tool exists.
 
 ## 11. Open items
 
-- Exact default location for the tool (`Z:\Tools\srs-tracker`) — set,
-  can move later without design impact.
+- Exact location for the tool is configurable and has no design impact.
 - Nexus's own `.tracker` data does not exist yet; generating it is a
   follow-up task once the tool and JSON creation guide exist, not part of
   this build.

@@ -1046,7 +1046,7 @@ Run: `npm run dev`
 Run in another terminal: `curl -s http://localhost:3000/api/projects`
 Expected: `[]`
 
-Run: `curl -s -X POST http://localhost:3000/api/projects -H "Content-Type: application/json" -d "{\"path\": \"C:\\\\Users\\\\Tausif\\\\AppData\\\\Local\\\\Temp\\\\tracker-smoke-test\"}"`
+Run: `curl -s -X POST http://localhost:3000/api/projects -H "Content-Type: application/json" -d "{\"path\": \"C:\\\\Temp\\\\tracker-smoke-test\"}"`
 (create that directory first if it doesn't exist)
 Expected: 201 response with a `RegisteredProject` object, and a `.tracker/` folder with `meta.json`, `requirements.json`, `tasks.json`, `documents.json` created inside it.
 
