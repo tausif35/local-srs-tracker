@@ -3,10 +3,10 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "dev": "next dev -p 3210",
     "build": "next build",
-    "start": "next start",
-    "go": "next start",
+    "start": "next start -p 3210",
+    "go": "next start -p 3210",
     "package:win": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/build-release.ps1",
     "test": "vitest run"
   },

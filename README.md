@@ -78,7 +78,7 @@ npm install
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000), select **Browse**, and register a project folder. If the folder does not already contain `.tracker/`, SRS Tracker creates default scaffold files without replacing existing data.
+Open [http://localhost:3210](http://localhost:3210), select **Browse**, and register a project folder. If the folder does not already contain `.tracker/`, SRS Tracker creates default scaffold files without replacing existing data.
 
 ### 2. Production Server
 
