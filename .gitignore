@@ -10,4 +10,10 @@ next-env.d.ts
 dev.log
 dist/
 .temp/
+__pycache__/
+*.pyc
 .remember/
+.tracker/
+.vscode/
+.worktrees/
+

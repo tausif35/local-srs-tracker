@@ -6,6 +6,7 @@ import { useProjectData } from "@/hooks/useProjectData";
 import Link from "next/link";
 import { colorForCategory } from "@/lib/categoryColor";
 import type { Requirement, Task } from "@/lib/types";
+import { TraceabilityMatrix } from "@/components/requirements/TraceabilityMatrix";
 
 const STATUS_ORDER: NonNullable<Requirement["status"]>[] = ["not-started", "in-progress", "done"];
 const PAGE_SIZE = 50;
@@ -25,6 +26,7 @@ export default function RequirementsPage() {
   const [statusFilter, setStatusFilter] = useState<"all" | NonNullable<Requirement["status"]>>("all");
   const [criticalOnly, setCriticalOnly] = useState(false);
   const [page, setPage] = useState(1);
+  const [view, setView] = useState<"list" | "matrix">("list");
 
   // Support deep-linking from elsewhere in the app, e.g. /requirements?q=FR-MT-2 from a task's
   // linked-requirement chip.
@@ -127,12 +129,12 @@ export default function RequirementsPage() {
           value={query}
           onChange={(event) => setQuery(event.target.value)}
           placeholder="Search id, text, section..."
-          className="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm"
+          className="min-w-48 flex-1 rounded-full border border-slate-300/60 bg-white/60 backdrop-blur px-4 py-2 text-sm shadow-sm transition-colors hover:border-indigo-300 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
         />
         <select
           value={category}
           onChange={(event) => setCategory(event.target.value)}
-          className="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm"
+          className="rounded-full border border-slate-300/60 bg-white/60 backdrop-blur px-4 py-2 text-sm shadow-sm transition-colors hover:border-indigo-300 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
         >
           {categories.map((cat) => (
             <option key={cat} value={cat}>
@@ -140,20 +142,28 @@ export default function RequirementsPage() {
             </option>
           ))}
         </select>
-        <label className="flex items-center gap-2 text-sm text-slate-600">
+        <label className="flex items-center gap-2 text-sm text-slate-600 bg-white/60 px-3 py-1.5 rounded-full border border-slate-300/60 backdrop-blur shadow-sm">
           <input
             type="checkbox"
             checked={criticalOnly}
             onChange={(event) => setCriticalOnly(event.target.checked)}
+            className="rounded text-indigo-600 focus:ring-indigo-500"
           />
           Critical only
         </label>
+        
+        <div className="ml-auto flex rounded-full bg-slate-200/50 p-1 shadow-inner backdrop-blur">
+          <button type="button" aria-pressed={view === "list"} onClick={() => setView("list")} className={`rounded-full px-4 py-1.5 text-sm font-medium transition-all duration-300 ${view === "list" ? "bg-white text-indigo-700 shadow-sm" : "text-slate-600 hover:text-slate-900"}`}>List</button>
+          <button type="button" aria-pressed={view === "matrix"} onClick={() => setView("matrix")} className={`rounded-full px-4 py-1.5 text-sm font-medium transition-all duration-300 ${view === "matrix" ? "bg-white text-indigo-700 shadow-sm" : "text-slate-600 hover:text-slate-900"}`}>Matrix</button>
+        </div>
       </div>
 
       {loading ? (
         <p className="text-slate-500">Loading...</p>
       ) : filtered.length === 0 ? (
         <p className="text-sm text-slate-500">No requirements match these filters.</p>
+      ) : view === "matrix" ? (
+        <TraceabilityMatrix requirements={visibleRequirements} tasks={tasks} projectId={id} />
       ) : (
         <div className="space-y-6">
           {sections.map(({ section, items }) => (

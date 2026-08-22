@@ -15,6 +15,7 @@ import { validateTaskGraph, validateTaskTransition } from "@/lib/taskWorkflow";
 import { BoardColumn } from "./BoardColumn";
 import { NewTaskDialog } from "./NewTaskDialog";
 import { TaskDetailModal } from "./TaskDetailModal";
+import { TaskDAG } from "./TaskDAG";
 
 const COLUMNS: { id: TaskColumn; label: string }[] = [
   { id: "planning", label: "Planning" },
@@ -46,13 +47,13 @@ export function TaskBoard({
   const [undoTasks, setUndoTasks] = useState<Task[] | null>(null);
   const [query, setQuery] = useState("");
   const [priority, setPriority] = useState<Task["priority"] | "all">("all");
-  const [view, setView] = useState<"board" | "list">("board");
+  const [view, setView] = useState<"board" | "list" | "graph">("board");
   const [preferencesLoaded, setPreferencesLoaded] = useState(false);
 
   useEffect(() => {
     const saved = window.localStorage.getItem(`srs-tracker:board-view:${projectId}`);
     if (saved) try {
-        const preference = JSON.parse(saved) as { query?: string; priority?: Task["priority"] | "all"; view?: "board" | "list" };
+        const preference = JSON.parse(saved) as { query?: string; priority?: Task["priority"] | "all"; view?: "board" | "list" | "graph" };
         setQuery(preference.query ?? ""); setPriority(preference.priority ?? "all"); setView(preference.view ?? "board");
       } catch { /* Ignore invalid machine-local preferences. */ }
     setPreferencesLoaded(true);
@@ -171,22 +172,44 @@ export function TaskBoard({
           New task
         </button></div>
       </div>
-      <div className="mb-4 flex flex-wrap gap-2"><label className="sr-only" htmlFor="task-search">Search tasks</label><input id="task-search" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search tasks..." className="min-w-48 flex-1 rounded-md border border-slate-300 px-3 py-2 text-sm" /><label className="sr-only" htmlFor="task-priority">Priority</label><select id="task-priority" value={priority} onChange={(event) => setPriority(event.target.value as Task["priority"] | "all")} className="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm"><option value="all">All priorities</option><option value="high">High</option><option value="medium">Medium</option><option value="low">Low</option></select><div className="flex rounded-md border border-slate-300 p-0.5"><button type="button" aria-pressed={view === "board"} onClick={() => setView("board")} className={`rounded px-3 py-1 text-sm ${view === "board" ? "bg-slate-900 text-white" : "text-slate-600"}`}>Board</button><button type="button" aria-pressed={view === "list"} onClick={() => setView("list")} className={`rounded px-3 py-1 text-sm ${view === "list" ? "bg-slate-900 text-white" : "text-slate-600"}`}>List</button></div></div>
-      {error && <p role="alert" className="mb-4 rounded-md bg-rose-50 p-3 text-sm text-rose-700">{error}</p>}
-      {undoTasks && <div role="status" className="mb-4 flex items-center justify-between rounded-md bg-indigo-50 p-3 text-sm text-indigo-800"><span>Task change saved.</span><button type="button" className="font-medium underline" onClick={() => { const snapshot = undoTasks; setUndoTasks(null); void onChange(snapshot).catch((caught) => setError(caught instanceof Error ? caught.message : "Unable to undo task change.")); }}>Undo</button></div>}
-      {view === "list" ? <TaskList tasks={COLUMNS.flatMap((column) => visibleTasksForColumn(column.id))} onOpen={(task) => setOpenTaskId(task.id)} /> : <DndContext sensors={sensors} onDragEnd={(event) => void handleDragEnd(event)}>
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-5">
-          {COLUMNS.map((column) => (
-            <BoardColumn
-              key={column.id}
-              column={column}
-              tasks={visibleTasksForColumn(column.id)}
-              onOpenTask={(task) => setOpenTaskId(task.id)}
-              incompleteBlockersFor={incompleteBlockersFor}
-            />
-          ))}
+      <div className="mb-4 flex flex-wrap gap-2">
+        <label className="sr-only" htmlFor="task-search">Search tasks</label>
+        <input id="task-search" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search tasks..." className="min-w-48 flex-1 rounded-full border border-slate-300/60 bg-white/60 backdrop-blur px-4 py-2 text-sm shadow-sm transition-colors hover:border-indigo-300 focus:outline-none focus:ring-2 focus:ring-indigo-500/20" />
+        <label className="sr-only" htmlFor="task-priority">Priority</label>
+        <select id="task-priority" value={priority} onChange={(event) => setPriority(event.target.value as Task["priority"] | "all")} className="rounded-full border border-slate-300/60 bg-white/60 backdrop-blur px-4 py-2 text-sm shadow-sm hover:border-indigo-300 focus:outline-none focus:ring-2 focus:ring-indigo-500/20">
+          <option value="all">All priorities</option>
+          <option value="high">High</option>
+          <option value="medium">Medium</option>
+          <option value="low">Low</option>
+        </select>
+        <div className="flex rounded-full bg-slate-200/50 p-1 shadow-inner backdrop-blur">
+          <button type="button" aria-pressed={view === "board"} onClick={() => setView("board")} className={`rounded-full px-4 py-1.5 text-sm font-medium transition-all duration-300 ${view === "board" ? "bg-white text-indigo-700 shadow-sm" : "text-slate-600 hover:text-slate-900"}`}>Board</button>
+          <button type="button" aria-pressed={view === "list"} onClick={() => setView("list")} className={`rounded-full px-4 py-1.5 text-sm font-medium transition-all duration-300 ${view === "list" ? "bg-white text-indigo-700 shadow-sm" : "text-slate-600 hover:text-slate-900"}`}>List</button>
+          <button type="button" aria-pressed={view === "graph"} onClick={() => setView("graph")} className={`rounded-full px-4 py-1.5 text-sm font-medium transition-all duration-300 ${view === "graph" ? "bg-white text-indigo-700 shadow-sm" : "text-slate-600 hover:text-slate-900"}`}>Graph</button>
         </div>
-      </DndContext>}
+      </div>
+      {error && <p role="alert" className="mb-4 rounded-md bg-rose-50 p-3 text-sm text-rose-700">{error}</p>}
+      {undoTasks && <div role="status" className="mb-4 flex items-center justify-between rounded-xl bg-indigo-50/80 backdrop-blur p-4 text-sm text-indigo-800 shadow-sm border border-indigo-100"><span>Task change saved.</span><button type="button" className="font-medium underline hover:text-indigo-900" onClick={() => { const snapshot = undoTasks; setUndoTasks(null); void onChange(snapshot).catch((caught) => setError(caught instanceof Error ? caught.message : "Unable to undo task change.")); }}>Undo</button></div>}
+      
+      {view === "list" ? (
+        <TaskList tasks={COLUMNS.flatMap((column) => visibleTasksForColumn(column.id))} onOpen={(task) => setOpenTaskId(task.id)} />
+      ) : view === "graph" ? (
+        <TaskDAG tasks={tasks} onOpenTask={(task) => setOpenTaskId(task.id)} />
+      ) : (
+        <DndContext sensors={sensors} onDragEnd={(event) => void handleDragEnd(event)}>
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-5">
+            {COLUMNS.map((column) => (
+              <BoardColumn
+                key={column.id}
+                column={column}
+                tasks={visibleTasksForColumn(column.id)}
+                onOpenTask={(task) => setOpenTaskId(task.id)}
+                incompleteBlockersFor={incompleteBlockersFor}
+              />
+            ))}
+          </div>
+        </DndContext>
+      )}
       {dialogOpen && <NewTaskDialog onCreate={(task) => void handleCreate(task)} onClose={() => setDialogOpen(false)} />}
       {openTask && (
         <TaskDetailModal

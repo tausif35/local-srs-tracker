@@ -1,0 +1,23 @@
+{
+  "tracker-integrity": {
+    "PostToolUse": [
+      {
+        "matcher": "replace_file_content|write_to_file|multi_replace_file_content",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python \"${CLAUDE_PLUGIN_ROOT}/scripts/tracker.py\" health --quiet",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "type": "command",
+        "command": "python \"${CLAUDE_PLUGIN_ROOT}/scripts/tracker.py\" check-stop-readiness",
+        "timeout": 10
+      }
+    ]
+  }
+}

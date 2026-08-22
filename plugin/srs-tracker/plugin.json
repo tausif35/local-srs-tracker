@@ -1,0 +1,6 @@
+{
+  "name": "srs-tracker",
+  "displayName": "SRS Tracker & Task Lifecycle Plugin",
+  "version": "1.0.0",
+  "description": "Local-first requirements, task board lifecycle, decision logging, and multi-agent coordination."
+}

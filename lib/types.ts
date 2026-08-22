@@ -62,6 +62,12 @@ export interface TaskVerification {
   evidence?: string;
 }
 
+export interface TaskMetadata {
+  plannedBy?: string;
+  implementedBy?: string;
+  verifiedBy?: string;
+}
+
 export interface Task {
   id: string;
   title: string;
@@ -78,6 +84,7 @@ export interface Task {
   unresolvedDecisions?: string[];
   priority?: "low" | "medium" | "high";
   notes?: string;
+  metadata?: TaskMetadata;
   order: number;
   createdAt: string;
   updatedAt: string;
